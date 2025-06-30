@@ -8,9 +8,34 @@ data Formula =
   | And Formula Formula
   | Or Formula Formula
   | Not Formula
-  deriving (Show)
+  deriving (Eq)
 
 
+show_aux :: Formula -> String
+show_aux (Var x) = "v" ++ show x
+show_aux (Not f) = "(Not " ++ show_aux f ++ ")"
+show_aux (And l r) = "(And " ++ show_aux l ++ " " ++ show_aux r ++ ")"
+show_aux (Or l r) = "(Or " ++ show_aux l ++ " " ++ show_aux r ++ ")"
+
+
+instance Show Formula where
+  show (Var x) = "v" ++ show x
+  show (Not f) = "Not " ++ show_aux f
+  show (And l r) = "And " ++ show_aux l ++ " " ++ show_aux r
+  show (Or l r) = "Or " ++ show_aux l ++ " " ++ show_aux r
+
+size :: Formula -> Int
+size (Var _) = 1
+size (And l r) = 1 + size l + size r
+size (Or l r) = 1 + size l + size r
+size (Not f) = 1 + size f
+
+
+iff :: Int -> Int -> Formula
+iff a b= Or (And (Var a) (Var b)) (And (Not (Var a)) (Not (Var b)))
+
+e :: Formula
+e = iff 1 1
 
 gen_formulas :: Int -> Int -> [Formula]
 gen_formulas size vars = do
@@ -90,6 +115,9 @@ gen_table_2 = do
   let (k, l) = gen_stats i j
   return (i, j, fromIntegral k /  fromIntegral l)
 
+
+gen_debug :: Int -> Int -> String
+gen_debug s v = intercalate "\n" $ map show $ gen_tautology s v
 
 main :: IO ()
 main = do
